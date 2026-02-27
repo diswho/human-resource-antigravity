@@ -1,0 +1,13 @@
+fastapi[all]
+sqlmodel
+alembic
+psycopg2-binary
+pydantic-settings
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt==3.2.0
+emails
+python-multipart
+pytest
+httpx
+apscheduler

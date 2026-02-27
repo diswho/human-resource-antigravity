@@ -1,0 +1,43 @@
+# HR Management System - Implementation Plan
+
+This project implements a full-stack HR Management System designed to bridge legacy ZKTime data (SQLite) with a modern web ecosystem.
+
+## 🏗️ Technical Architecture
+
+The system follows a hub-and-spoke model where the new PostgreSQL database acts as the source of truth for all modern features, while the legacy SQLite database serves as the input stream.
+
+### 1. Data Pipeline
+- **Source**: [ZKTimeNet08.db](file:///c:/Users/phu_v/Documents/WorkSpaceAntigraty/human-resource/ZKTimeNet08.db) (SQLite) - Read-only mount.
+- **Sync Engine**: [migrate.py](file:///c:/Users/phu_v/Documents/WorkSpaceAntigraty/human-resource/backend/app/migrate.py) + `APScheduler` (Worker process).
+- **Target**: PostgreSQL 16 - Handles relationships, rich data, and user accounts.
+
+### 2. Backend (FastAPI + SQLModel)
+- **SQLModel**: Unifies Pydantic validation and SQLAlchemy ORM.
+- **Security**: JWT-based authentication using `python-jose` and `passlib` (bcrypt).
+- **Automated Worker**: Runs every 15 minutes to scan `sys_log` for updates and imports new attendance logs.
+
+### 3. Frontend (React + Vite)
+- **Styling**: Vanilla CSS with Tailwind utility classes.
+- **State Management**: React Hooks + Custom Auth Provider.
+- **Dashboard**: High-performance UI for employee directory, attendance tracking, and extended profiles.
+
+### 4. Infrastructure (Docker & Traefik)
+- **Containerization**: 4 services ([db](file:///C:/Program%20Files/Git/usr/bin/updatedb), `backend`, `frontend`, `traefik`).
+- **Routing**: Traefik handles `localhost` rules with path-based routing (`/api` -> backend, `/` -> frontend).
+
+## 🛠️ Proposed Components
+
+### [Component] Synchronization Engine ([migrate.py](file:///c:/Users/phu_v/Documents/WorkSpaceAntigraty/human-resource/backend/app/migrate.py))
+- **Incremental Logic**: Uses `external_id` (Legacy PK) to avoid duplicates.
+- **Change Detection**: Leverages SQLite's `sys_log` to detect edits to departments and employees.
+- **User Generation**: Automatically creates system accounts for employees using PIN-based fallback emails.
+
+### [Component] Database Schema (`models/`)
+- **HR Module**: [Employee](file:///c:/Users/phu_v/Documents/WorkSpaceAntigraty/human-resource/backend/app/models/hr.py#37-44), [Department](file:///c:/Users/phu_v/Documents/WorkSpaceAntigraty/human-resource/backend/app/models/hr.py#9-12), [Position](file:///c:/Users/phu_v/Documents/WorkSpaceAntigraty/human-resource/backend/app/models/hr.py#17-20).
+- **Sync Module**: [SyncState](file:///c:/Users/phu_v/Documents/WorkSpaceAntigraty/human-resource/backend/app/models/hr.py#45-50) (tracks high-water marks for logs).
+- **Attendance Module**: [AttendanceLog](file:///c:/Users/phu_v/Documents/WorkSpaceAntigraty/human-resource/frontend/src/pages/Attendance.tsx#5-13), [AttendanceSummary](file:///c:/Users/phu_v/Documents/WorkSpaceAntigraty/human-resource/backend/app/models/attendance.py#24-27).
+
+## ✅ Verification & Hardening
+- **Path Priority**: Traefik priority set to prevent 405 errors on API calls.
+- **Bcrypt Stability**: Pinned `bcrypt==3.2.0` for compatibility with legacy Linux kernels/containers.
+- **Validation**: Strict Pydantic rules for password length and email formats.

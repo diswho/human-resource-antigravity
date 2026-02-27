@@ -1,0 +1,63 @@
+# HR Management System - Project Walkthrough
+
+This document provides a complete guide to the features, setup, and operation of your new HR Management System.
+
+## 🌟 Key Features
+
+1.  **Seamless Legacy Sync**: Automatically pulls data from [ZKTimeNet08.db](file:///c:/Users/phu_v/Documents/WorkSpaceAntigraty/human-resource/ZKTimeNet08.db) every 15 minutes.
+2.  **Smart User Creation**: Generates dashboard accounts for all 841+ staff members automatically.
+3.  **Extended Profiles**: Support for Lao Names, Bank Accounts, and Gasoline Allowances.
+4.  **Bulk Attendance**: Successfully migrated 10,000+ most recent logs with support for delta updates.
+5.  **Premium Dashboard**: Modern UI with dark mode, search filters, and real-time attendance views.
+
+---
+
+## 🚀 Getting Started
+
+### 1. Deployment
+Run the stack using Docker Compose:
+```bash
+docker-compose up -d --build
+```
+
+### 2. First-Time Initialization
+Run these commands in order to setup the database and create your admin account:
+```bash
+# 1. Reset/Initialize Database schema
+docker-compose exec backend python -m app.reset_db
+
+# 2. Perform initial migration from SQLite
+docker-compose exec backend python -m app.migrate
+
+# 3. Create the initial Superuser (Admin)
+docker-compose exec backend python -m app.initial_data
+```
+
+---
+
+## 🔄 Synchronization Logic
+
+The system is designed for "Set and Forget" operation:
+- **Background Worker**: Controlled by [app/worker.py](file:///c:/Users/phu_v/Documents/WorkSpaceAntigraty/human-resource/backend/app/worker.py). It runs the migration logic automatically.
+- **SysLog Monitoring**: The system scans the SQLite `sys_log` table to detect edits. If you change a name or department in the old software, it updates in the new dashboard.
+- **Auto-Account Creation**: New employees added to the old system will automatically get a login for the dashboard (Login: `[PIN]@internal.com`, Pass: `password_[PIN]`).
+
+---
+
+## 🛠️ Maintenance & Verification
+
+- **Backend Logs**: Monitor sync activity:
+  ```bash
+  docker-compose logs -f backend
+  ```
+- **Login Confirmation**:
+  - URL: `http://localhost/login`
+  - Admin Credentials (from [.env](file:///c:/Users/phu_v/Documents/WorkSpaceAntigraty/human-resource/.env)): `admin@example.com` / `changethis`
+  - Staff Credentials (example): `60004@internal.com` / `password_60004`
+
+---
+
+## 📝 Important Notes
+- **Routing**: Always access through `http://localhost`. Traefik ensures your requests reach the right service.
+- **Security**: The system uses `passlib` with `bcrypt` for secure hashing. All employees are initialized with temporary secure passwords based on their PINs.
+- **Database**: Access the production database directly on port `5432` if needed for custom reporting via DBeaver.
