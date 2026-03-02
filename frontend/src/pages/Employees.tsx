@@ -8,6 +8,7 @@ interface Employee {
     emp_pin: string;
     firstname: string;
     lastname: string;
+    email?: string;
     lao_name?: string;
     bank_account?: string;
     gasoline_allowance: number;
@@ -178,6 +179,7 @@ const Employees = () => {
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">ID</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Full Name (EN)</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Lao Name</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Bank Account</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Gasoline</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Action</th>
@@ -203,6 +205,7 @@ const Employees = () => {
                                         <td className="px-6 py-4 font-mono text-sm text-slate-600 dark:text-slate-400">{emp.emp_pin}</td>
                                         <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{emp.firstname} {emp.lastname}</td>
                                         <td className="px-6 py-4 text-slate-700 dark:text-slate-300">{emp.lao_name || '-'}</td>
+                                        <td className="px-6 py-4 text-slate-600 dark:text-slate-400 text-sm">{emp.email || '-'}</td>
                                         <td className="px-6 py-4 font-mono text-sm text-slate-600 dark:text-slate-400">{emp.bank_account || '-'}</td>
                                         <td className="px-6 py-4 text-slate-700 dark:text-slate-300">
                                             {emp.gasoline_allowance.toLocaleString()} LAK
@@ -270,7 +273,10 @@ const Employees = () => {
                         <div className="p-6 space-y-6">
                             <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
                                 <p className="text-sm font-semibold text-slate-900 dark:text-white">{editingEmp.firstname} {editingEmp.lastname}</p>
-                                <p className="text-xs text-slate-500">ID: {editingEmp.emp_pin}</p>
+                                <div className="flex justify-between items-center mt-1">
+                                    <p className="text-xs text-slate-500">ID: {editingEmp.emp_pin}</p>
+                                    <p className="text-xs text-blue-500 font-medium">{editingEmp.email || ''}</p>
+                                </div>
                             </div>
 
                             <div>

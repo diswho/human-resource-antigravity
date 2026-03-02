@@ -3,7 +3,7 @@ from typing import Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from app.api.deps import SessionDep, CurrentUser, get_current_active_superuser
 from app.crud import employee as employee_crud
-from app.models.hr import Employee, EmployeesPublic, DepartmentsPublic
+from app.models.hr import Employee, EmployeePublic, EmployeesPublic, DepartmentsPublic
 from app.models.user import UserRole
 
 router = APIRouter()
@@ -23,12 +23,12 @@ def read_employees(
     Retrieve employees with pagination and filtering.
     """
     employees = employee_crud.get_employees(
-        session=session, 
+        session=session,
         current_user=current_user,
-        skip=skip, 
-        limit=limit, 
-        dept_id=dept_id, 
-        pos_id=pos_id, 
+        skip=skip,
+        limit=limit,
+        dept_id=dept_id,
+        pos_id=pos_id,
         query=query
     )
     count = employee_crud.get_employees_count(
@@ -50,7 +50,7 @@ def read_departments(session: SessionDep) -> Any:
     return DepartmentsPublic(data=departments, count=len(departments))
 
 
-@router.get("/{id}", response_model=Employee)
+@router.get("/{id}", response_model=EmployeePublic)
 def read_employee_by_id(
     id: int,
     session: SessionDep,
@@ -77,15 +77,16 @@ def update_employee(
     db_emp = employee_crud.get_employee(session=session, id=id)
     if not db_emp:
         raise HTTPException(status_code=404, detail="Employee not found")
-    
+
     # RBAC rules for editing
     if current_user.role == UserRole.employee:
         if current_user.employee_id != id:
-            raise HTTPException(status_code=403, detail="You can only edit your own personal information")
+            raise HTTPException(
+                status_code=403, detail="You can only edit your own personal information")
         # Employee can only edit specific personal fields
         allowed_fields = {"lao_name", "bank_account"}
         emp_in = {k: v for k, v in emp_in.items() if k in allowed_fields}
     elif current_user.role not in [UserRole.admin, UserRole.hr]:
         raise HTTPException(status_code=403, detail="Not enough privileges")
-        
+
     return employee_crud.update_employee(session=session, db_emp=db_emp, emp_in=emp_in)
