@@ -34,18 +34,32 @@ def update_last_sync_id(session: Session, table_name: str, last_id: int):
         session.commit()
 
 def sync_departments(sqlite_cursor, session: Session):
-    sqlite_cursor.execute("SELECT id, dept_name FROM hr_department")
+    sqlite_cursor.execute("SELECT id, dept_code, dept_name, dept_parentcode FROM hr_department")
+    rows = sqlite_cursor.fetchall()
     count = 0
-    for d_id, d_name in sqlite_cursor.fetchall():
+    # First pass: Create/Update basic info
+    for d_id, d_code, d_name, d_parent_code in rows:
         db_dept = session.exec(select(Department).where(Department.external_id == d_id)).first()
         if not db_dept:
-            db_dept = Department(name=d_name, external_id=d_id)
+            db_dept = Department(name=d_name, external_id=d_id, dept_code=d_code)
         else:
             db_dept.name = d_name
+            db_dept.dept_code = d_code
         session.add(db_dept)
         count += 1
     session.commit()
-    logger.info(f"Synced {count} Departments.")
+
+    # Second pass: Set parent_id based on dept_parentcode
+    for d_id, d_code, d_name, d_parent_code in rows:
+        if d_parent_code and d_parent_code != 0:
+            db_dept = session.exec(select(Department).where(Department.external_id == d_id)).first()
+            parent_dept = session.exec(select(Department).where(Department.dept_code == d_parent_code)).first()
+            if db_dept and parent_dept:
+                db_dept.parent_id = parent_dept.id
+                session.add(db_dept)
+    
+    session.commit()
+    logger.info(f"Synced {count} Departments with hierarchy.")
 
 def sync_positions(sqlite_cursor, session: Session):
     sqlite_cursor.execute("SELECT id, posi_name FROM hr_position")

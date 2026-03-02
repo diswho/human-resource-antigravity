@@ -4,10 +4,18 @@ from sqlmodel import Field, SQLModel, Relationship
 
 class DepartmentBase(SQLModel):
     name: str = Field(index=True, max_length=255)
-    external_id: Optional[int] = Field(default=None, index=True) # department_id in ZKTime
+    external_id: Optional[int] = Field(default=None, index=True) # id in hr_department
+    dept_code: Optional[int] = Field(default=None, index=True)
 
 class Department(DepartmentBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+    parent_id: Optional[int] = Field(default=None, foreign_key="department.id")
+    
+    parent: Optional["Department"] = Relationship(
+        back_populates="children", 
+        sa_relationship_kwargs={"remote_side": "Department.id"}
+    )
+    children: List["Department"] = Relationship(back_populates="parent")
     employees: List["Employee"] = Relationship(back_populates="department")
 
 class PositionBase(SQLModel):
@@ -47,3 +55,11 @@ class SyncState(SQLModel, table=True):
     table_name: str = Field(unique=True, index=True)
     last_external_id: int = Field(default=0)
     last_sync: datetime = Field(default_factory=datetime.utcnow)
+
+class EmployeesPublic(SQLModel):
+    data: List[Employee]
+    count: int
+
+class DepartmentsPublic(SQLModel):
+    data: List[Department]
+    count: int

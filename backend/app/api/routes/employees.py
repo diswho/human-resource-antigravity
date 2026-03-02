@@ -3,12 +3,12 @@ from typing import Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from app.api.deps import SessionDep, get_current_active_superuser
 from app.crud import employee as employee_crud
-from app.models.hr import Employee
+from app.models.hr import Employee, EmployeesPublic, DepartmentsPublic
 
 router = APIRouter()
 
 
-@router.get("/", response_model=List[Employee])
+@router.get("/", response_model=EmployeesPublic)
 def read_employees(
     session: SessionDep,
     skip: int = 0,
@@ -18,7 +18,7 @@ def read_employees(
     query: Optional[str] = None,
 ) -> Any:
     """
-    Retrieve employees. (Currently for all, but could be restricted to Superusers)
+    Retrieve employees with pagination and filtering.
     """
     employees = employee_crud.get_employees(
         session=session, 
@@ -28,7 +28,22 @@ def read_employees(
         pos_id=pos_id, 
         query=query
     )
-    return employees
+    count = employee_crud.get_employees_count(
+        session=session,
+        dept_id=dept_id,
+        pos_id=pos_id,
+        query=query
+    )
+    return EmployeesPublic(data=employees, count=count)
+
+
+@router.get("/departments", response_model=DepartmentsPublic)
+def read_departments(session: SessionDep) -> Any:
+    """
+    Retrieve all departments.
+    """
+    departments = employee_crud.get_departments(session=session)
+    return DepartmentsPublic(data=departments, count=len(departments))
 
 
 @router.get("/{id}", response_model=Employee)
