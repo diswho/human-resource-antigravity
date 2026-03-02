@@ -3,10 +3,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.main import api_router
 from app.core.config import settings
+from app.initial_data import init_db
 from app.worker import start_worker, stop_worker
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Ensure database is initialized and superuser exists
+    init_db()
     # Start the background worker
     start_worker()
     yield
