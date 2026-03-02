@@ -5,7 +5,7 @@ interface User {
     id: number;
     email: string;
     full_name?: string;
-    is_superuser: boolean;
+    role: 'admin' | 'hr' | 'employee';
 }
 
 interface AuthContextType {

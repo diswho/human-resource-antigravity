@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 import { Search, Edit2, X, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 interface Employee {
     id: number;
@@ -25,6 +26,7 @@ interface DepartmentNode extends Department {
 }
 
 const Employees = () => {
+    const { user: currentUser } = useAuth();
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [departments, setDepartments] = useState<Department[]>([]);
     const [search, setSearch] = useState('');
@@ -38,6 +40,7 @@ const Employees = () => {
     const [editData, setEditData] = useState({ lao_name: '', bank_account: '', gasoline_allowance: 0 });
 
     const fetchDepartments = async () => {
+        if (currentUser?.role === 'employee') return;
         try {
             const response = await api.get('/employees/departments');
             setDepartments(response.data.data);
@@ -70,14 +73,16 @@ const Employees = () => {
         setLoading(true);
         try {
             const skip = (currentPage - 1) * limit;
-            const response = await api.get('/employees', {
-                params: {
-                    query: search,
-                    dept_id: selectedDept || undefined,
-                    skip: skip,
-                    limit: limit
-                }
-            });
+            const params: any = {
+                skip: skip,
+                limit: limit
+            };
+            if (currentUser?.role !== 'employee') {
+                if (search) params.query = search;
+                if (selectedDept) params.dept_id = selectedDept;
+            }
+
+            const response = await api.get('/employees', { params });
             setEmployees(response.data.data);
             setTotalCount(response.data.count);
         } catch (err) {
@@ -89,7 +94,7 @@ const Employees = () => {
 
     useEffect(() => {
         fetchDepartments();
-    }, []);
+    }, [currentUser]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -129,34 +134,40 @@ const Employees = () => {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Employee Management</h1>
-                    <p className="text-slate-500 dark:text-slate-400">View and manage extended employee records.</p>
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+                        {currentUser?.role === 'employee' ? 'My Information' : 'Employee Management'}
+                    </h1>
+                    <p className="text-slate-500 dark:text-slate-400">
+                        {currentUser?.role === 'employee' ? 'View and update your personal records.' : 'View and manage extended employee records.'}
+                    </p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="relative">
-                        <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                        <select
-                            value={selectedDept}
-                            onChange={(e) => setSelectedDept(e.target.value)}
-                            className="pl-12 pr-10 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none w-full sm:w-56 appearance-none transition-all shadow-sm text-slate-700 dark:text-slate-300"
-                        >
-                            <option value="">All Departments</option>
-                            {renderDeptOptions(deptTree)}
-                        </select>
-                    </div>
+                {currentUser?.role !== 'employee' && (
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <div className="relative">
+                            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                            <select
+                                value={selectedDept}
+                                onChange={(e) => setSelectedDept(e.target.value)}
+                                className="pl-12 pr-10 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none w-full sm:w-56 appearance-none transition-all shadow-sm text-slate-700 dark:text-slate-300"
+                            >
+                                <option value="">All Departments</option>
+                                {renderDeptOptions(deptTree)}
+                            </select>
+                        </div>
 
-                    <div className="relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-                        <input
-                            type="text"
-                            placeholder="Search employees..."
-                            className="pl-12 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none w-full sm:w-80 transition-all shadow-sm"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
+                        <div className="relative">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                            <input
+                                type="text"
+                                placeholder="Search employees..."
+                                className="pl-12 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none w-full sm:w-80 transition-all shadow-sm"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
 
             <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-premium border border-slate-200 dark:border-slate-800 overflow-hidden">
@@ -178,13 +189,13 @@ const Employees = () => {
                                     <td colSpan={6} className="px-6 py-12 text-center text-slate-500 italic">
                                         <div className="flex flex-col items-center gap-2">
                                             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></div>
-                                            <span>Loading employees...</span>
+                                            <span>Loading...</span>
                                         </div>
                                     </td>
                                 </tr>
                             ) : employees.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-500 italic">No employees found.</td>
+                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-500 italic">No records found.</td>
                                 </tr>
                             ) : (
                                 employees.map((emp) => (
@@ -212,7 +223,7 @@ const Employees = () => {
                 </div>
 
                 {/* Pagination Controls */}
-                {!loading && totalCount > 0 && (
+                {!loading && totalCount > limit && (
                     <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div className="text-sm text-slate-500 dark:text-slate-400">
                             Showing <span className="font-semibold text-slate-900 dark:text-white">{((currentPage - 1) * limit) + 1}</span> to <span className="font-semibold text-slate-900 dark:text-white">{Math.min(currentPage * limit, totalCount)}</span> of <span className="font-semibold text-slate-900 dark:text-white">{totalCount}</span> results
@@ -227,7 +238,6 @@ const Employees = () => {
                                 <ChevronLeft size={20} className="text-slate-600 dark:text-slate-400" />
                             </button>
 
-                            {/* Page Info */}
                             <div className="flex items-center gap-1 mx-2">
                                 <span className="text-sm text-slate-500">Page</span>
                                 <span className="text-sm font-bold text-slate-900 dark:text-white">{currentPage}</span>
@@ -251,7 +261,7 @@ const Employees = () => {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-sm p-4">
                     <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-in fade-in zoom-in duration-200">
                         <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
-                            <h3 className="text-xl font-bold text-slate-900 dark:text-white">Edit Employee Info</h3>
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white">Edit Information</h3>
                             <button onClick={() => setEditingEmp(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                                 <X size={24} />
                             </button>
@@ -285,15 +295,17 @@ const Employees = () => {
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Gasoline Allowance (LAK)</label>
-                                <input
-                                    type="number"
-                                    value={editData.gasoline_allowance}
-                                    onChange={(e) => setEditData({ ...editData, gasoline_allowance: Number(e.target.value) })}
-                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white"
-                                />
-                            </div>
+                            {currentUser?.role !== 'employee' && (
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Gasoline Allowance (LAK)</label>
+                                    <input
+                                        type="number"
+                                        value={editData.gasoline_allowance}
+                                        onChange={(e) => setEditData({ ...editData, gasoline_allowance: Number(e.target.value) })}
+                                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white"
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         <div className="p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex gap-4">

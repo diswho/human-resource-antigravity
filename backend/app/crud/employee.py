@@ -1,6 +1,7 @@
 from typing import List, Optional
 from sqlmodel import Session, select, func
 from app.models.hr import Employee, Department, Position
+from app.models.user import User, UserRole
 
 def get_all_sub_department_ids(session: Session, dept_id: int) -> List[int]:
     """
@@ -16,6 +17,7 @@ def get_all_sub_department_ids(session: Session, dept_id: int) -> List[int]:
 def get_employees(
     session: Session, 
     *, 
+    current_user: User,
     skip: int = 0, 
     limit: int = 100,
     dept_id: Optional[int] = None,
@@ -23,6 +25,13 @@ def get_employees(
     query: Optional[str] = None
 ) -> List[Employee]:
     statement = select(Employee)
+    
+    # RBAC: Employees can only see themselves
+    if current_user.role == UserRole.employee:
+        if current_user.employee_id:
+            statement = statement.where(Employee.id == current_user.employee_id)
+        else:
+            return [] # No linked employee record
     if dept_id:
         dept_ids = get_all_sub_department_ids(session, dept_id)
         statement = statement.where(Employee.department_id.in_(dept_ids))
@@ -40,11 +49,19 @@ def get_employees(
 def get_employees_count(
     session: Session,
     *,
+    current_user: User,
     dept_id: Optional[int] = None,
     pos_id: Optional[int] = None,
     query: Optional[str] = None
 ) -> int:
     statement = select(func.count()).select_from(Employee)
+    
+    # RBAC: Employees can only count themselves
+    if current_user.role == UserRole.employee:
+        if current_user.employee_id:
+            statement = statement.where(Employee.id == current_user.employee_id)
+        else:
+            return 0
     if dept_id:
         dept_ids = get_all_sub_department_ids(session, dept_id)
         statement = statement.where(Employee.department_id.in_(dept_ids))
