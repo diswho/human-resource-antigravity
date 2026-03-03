@@ -46,7 +46,7 @@ After the containers are running, you must initialize the database schema and mi
    ```bash
    docker-compose exec backend python -m app.initial_data
    ```
-   *Default user: `admin@example.com` / `changethis` (configurable in `.env`)*
+   *Default user: `admin@example.com` / `changeme` (configurable in `.env`)*
 
 ## 🛠️ Development & Testing
 
@@ -65,11 +65,14 @@ The database port is exposed at `5432` for external tools (e.g., DBeaver):
 
 ### Key Features Implemented
 
+- **Role-Based Access Control (RBAC)**: secure hierarchy with `admin`, `hr`, and `employee` roles.
+- **Audit Logging System**: automated tracking of all data modifications (Admin only).
+- **Tree-View Department Filtering**: recursive department hierarchy for easier navigation.
+- **Email Integration**: unified view of employee records and their associated user emails.
+- **Responsive "Fit to Width" UI**: premium, modern design that scales to any screen size.
 - **Automated Migration**: seamless sync from legacy ZKTime SQLite databases.
 - **Modern Auth**: JWT-based authentication with secure password hashing (bcrypt).
-- **Employee Management**: view and edit employee details synced from hardware logs.
-- **Attendance Tracking**: browse and filter punch-in/out logs.
-- **Dark Mode**: support for modern UI aesthetics.
+- **Attendance Tracking**: browse and filter punch-in/out logs with pagination.
 
 ## 📄 License
 
