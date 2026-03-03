@@ -52,7 +52,7 @@ services:
       - "1025:1025"
 
   traefik:
-    image: traefik:v3.1
+    image: traefik:v2.11
     ports:
       - "80:80"
       - "443:443"
@@ -64,7 +64,7 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
+      - "--log.level=DEBUG"
 
 volumes:
   app-db-data:

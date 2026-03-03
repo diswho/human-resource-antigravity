@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
-import { Banknote, Calculator, ChevronLeft, ChevronRight, Edit2, Search } from 'lucide-react';
+import { Banknote, Calculator, Edit2 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 interface Payroll {

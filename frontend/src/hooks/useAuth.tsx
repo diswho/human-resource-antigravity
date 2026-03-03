@@ -5,6 +5,7 @@ interface User {
     id: number;
     email: string;
     full_name?: string;
+    bank_account?: string;
     role: 'admin' | 'hr' | 'employee';
 }
 

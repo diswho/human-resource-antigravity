@@ -60,6 +60,7 @@ class SyncState(SQLModel, table=True):
 class EmployeePublic(EmployeeBase):
     id: int
     email: Optional[str] = None
+    role: Optional[str] = None
 
 class EmployeesPublic(SQLModel):
     data: List[EmployeePublic]

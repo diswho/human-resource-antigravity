@@ -11,6 +11,7 @@ interface Employee {
     lao_name?: string;
     bank_account?: string;
     email?: string;
+    role?: string;
     gasoline_allowance: number;
     base_salary: number;
     department_id?: number;
@@ -39,7 +40,7 @@ const Employees = () => {
     const limit = 10;
 
     const [editingEmp, setEditingEmp] = useState<Employee | null>(null);
-    const [editData, setEditData] = useState({ lao_name: '', bank_account: '', gasoline_allowance: 0, base_salary: 0 });
+    const [editData, setEditData] = useState({ lao_name: '', bank_account: '', gasoline_allowance: 0, base_salary: 0, role: '' });
 
     const fetchDepartments = async () => {
         if (currentUser?.role === 'employee') return;
@@ -116,7 +117,8 @@ const Employees = () => {
             lao_name: emp.lao_name || '',
             bank_account: emp.bank_account || '',
             gasoline_allowance: emp.gasoline_allowance || 0,
-            base_salary: emp.base_salary || 0
+            base_salary: emp.base_salary || 0,
+            role: emp.role || 'employee'
         });
     };
 
@@ -183,6 +185,7 @@ const Employees = () => {
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Lao Name</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Bank Account</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Role</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Gasoline</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Action</th>
                             </tr>
@@ -190,7 +193,7 @@ const Employees = () => {
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-500 italic">
+                                    <td colSpan={8} className="px-6 py-12 text-center text-slate-500 italic">
                                         <div className="flex flex-col items-center gap-2">
                                             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></div>
                                             <span>Loading...</span>
@@ -199,7 +202,7 @@ const Employees = () => {
                                 </tr>
                             ) : employees.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-500 italic">No records found.</td>
+                                    <td colSpan={8} className="px-6 py-12 text-center text-slate-500 italic">No records found.</td>
                                 </tr>
                             ) : (
                                 employees.map((emp) => (
@@ -209,6 +212,14 @@ const Employees = () => {
                                         <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{emp.email || '-'}</td>
                                         <td className="px-6 py-4 text-slate-700 dark:text-slate-300">{emp.lao_name || '-'}</td>
                                         <td className="px-6 py-4 font-mono text-sm text-slate-600 dark:text-slate-400">{emp.bank_account || '-'}</td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${emp.role === 'admin' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                                                emp.role === 'hr' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
+                                                    'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                                }`}>
+                                                {emp.role || 'employee'}
+                                            </span>
+                                        </td>
                                         <td className="px-6 py-4 text-slate-700 dark:text-slate-300">
                                             {emp.gasoline_allowance.toLocaleString()} LAK
                                         </td>
@@ -284,7 +295,7 @@ const Employees = () => {
                                     type="text"
                                     value={editData.lao_name}
                                     onChange={(e) => setEditData({ ...editData, lao_name: e.target.value })}
-                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white"
+                                    className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-slate-900 dark:text-white"
                                     placeholder="ຊື່ ແລະ ນາມສະກຸນ"
                                 />
                             </div>
@@ -295,7 +306,7 @@ const Employees = () => {
                                     type="text"
                                     value={editData.bank_account}
                                     onChange={(e) => setEditData({ ...editData, bank_account: e.target.value })}
-                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white"
+                                    className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-slate-900 dark:text-white"
                                     placeholder="0572XXXXXXXXXXXX"
                                 />
                             </div>
@@ -308,7 +319,7 @@ const Employees = () => {
                                             type="number"
                                             value={editData.gasoline_allowance}
                                             onChange={(e) => setEditData({ ...editData, gasoline_allowance: Number(e.target.value) })}
-                                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white"
+                                            className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-slate-900 dark:text-white"
                                         />
                                     </div>
                                     {currentUser?.role === 'hr' || currentUser?.role === 'admin' ? (
@@ -318,10 +329,25 @@ const Employees = () => {
                                                 type="number"
                                                 value={editData.base_salary}
                                                 onChange={(e) => setEditData({ ...editData, base_salary: Number(e.target.value) })}
-                                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white"
+                                                className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-slate-900 dark:text-white"
                                             />
                                         </div>
                                     ) : null}
+                                </div>
+                            )}
+
+                            {currentUser?.role === 'admin' && (
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">User Role</label>
+                                    <select
+                                        value={editData.role}
+                                        onChange={(e) => setEditData({ ...editData, role: e.target.value })}
+                                        className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-slate-900 dark:text-white"
+                                    >
+                                        <option value="employee">Employee</option>
+                                        <option value="hr">HR</option>
+                                        <option value="admin">Admin</option>
+                                    </select>
                                 </div>
                             )}
                         </div>
