@@ -12,6 +12,7 @@ interface Employee {
     bank_account?: string;
     email?: string;
     gasoline_allowance: number;
+    base_salary: number;
     department_id?: number;
     position_id?: number;
 }
@@ -38,7 +39,7 @@ const Employees = () => {
     const limit = 10;
 
     const [editingEmp, setEditingEmp] = useState<Employee | null>(null);
-    const [editData, setEditData] = useState({ lao_name: '', bank_account: '', gasoline_allowance: 0 });
+    const [editData, setEditData] = useState({ lao_name: '', bank_account: '', gasoline_allowance: 0, base_salary: 0 });
 
     const fetchDepartments = async () => {
         if (currentUser?.role === 'employee') return;
@@ -115,6 +116,7 @@ const Employees = () => {
             lao_name: emp.lao_name || '',
             bank_account: emp.bank_account || '',
             gasoline_allowance: emp.gasoline_allowance || 0,
+            base_salary: emp.base_salary || 0
         });
     };
 
@@ -299,14 +301,27 @@ const Employees = () => {
                             </div>
 
                             {currentUser?.role !== 'employee' && (
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Gasoline Allowance (LAK)</label>
-                                    <input
-                                        type="number"
-                                        value={editData.gasoline_allowance}
-                                        onChange={(e) => setEditData({ ...editData, gasoline_allowance: Number(e.target.value) })}
-                                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white"
-                                    />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Gasoline Allowance (LAK)</label>
+                                        <input
+                                            type="number"
+                                            value={editData.gasoline_allowance}
+                                            onChange={(e) => setEditData({ ...editData, gasoline_allowance: Number(e.target.value) })}
+                                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white"
+                                        />
+                                    </div>
+                                    {currentUser?.role === 'hr' || currentUser?.role === 'admin' ? (
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Base Salary (LAK)</label>
+                                            <input
+                                                type="number"
+                                                value={editData.base_salary}
+                                                onChange={(e) => setEditData({ ...editData, base_salary: Number(e.target.value) })}
+                                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white"
+                                            />
+                                        </div>
+                                    ) : null}
                                 </div>
                             )}
                         </div>
