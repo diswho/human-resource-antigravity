@@ -2,6 +2,7 @@ from typing import List, Optional
 from sqlmodel import Session, select, func
 from app.models.hr import Employee, Department, Position, EmployeePublic
 from app.models.user import User, UserRole
+from app.crud import audit as audit_crud
 
 def get_all_sub_department_ids(session: Session, dept_id: int) -> List[int]:
     """
@@ -91,11 +92,29 @@ def get_employee_by_pin(session: Session, pin: str) -> Optional[Employee]:
 def get_employee(session: Session, id: int) -> Optional[Employee]:
     return session.get(Employee, id)
 
-def update_employee(session: Session, *, db_emp: Employee, emp_in: dict) -> Employee:
+def update_employee(session: Session, *, db_emp: Employee, emp_in: dict, user_id: Optional[int] = None) -> Employee:
+    old_data = db_emp.model_dump()
+    changes = {}
+    
     for field, value in emp_in.items():
         if hasattr(db_emp, field):
-            setattr(db_emp, field, value)
+            old_val = getattr(db_emp, field)
+            if old_val != value:
+                setattr(db_emp, field, value)
+                changes[field] = {"old": old_val, "new": value}
+    
     session.add(db_emp)
     session.commit()
     session.refresh(db_emp)
+    
+    if changes:
+        audit_crud.create_audit_log(
+            session=session,
+            user_id=user_id,
+            action="update",
+            target_type="employee",
+            target_id=db_emp.id,
+            details=changes
+        )
+        
     return db_emp

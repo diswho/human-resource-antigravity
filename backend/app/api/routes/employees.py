@@ -88,4 +88,4 @@ def update_employee(
     elif current_user.role not in [UserRole.admin, UserRole.hr]:
         raise HTTPException(status_code=403, detail="Not enough privileges")
         
-    return employee_crud.update_employee(session=session, db_emp=db_emp, emp_in=emp_in)
+    return employee_crud.update_employee(session=session, db_emp=db_emp, emp_in=emp_in, user_id=current_user.id)

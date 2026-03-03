@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Employees from './pages/Employees';
 import Attendance from './pages/Attendance';
+import AuditLogs from './pages/AuditLogs';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const { isAuthenticated, isLoading } = useAuth();
@@ -54,6 +55,15 @@ const App = () => {
                         element={
                             <ProtectedRoute>
                                 <Attendance />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    <Route
+                        path="/audit-logs"
+                        element={
+                            <ProtectedRoute>
+                                <AuditLogs />
                             </ProtectedRoute>
                         }
                     />

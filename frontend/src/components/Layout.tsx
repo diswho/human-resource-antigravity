@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { LayoutDashboard, Users, Clock, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, Clock, LogOut, Activity } from 'lucide-react';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { user, logout } = useAuth();
@@ -18,6 +18,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         { icon: Users, label: 'Employees', path: '/employees' },
         { icon: Clock, label: 'Attendance', path: '/attendance' },
     ];
+
+    if (user?.role === 'admin') {
+        menuItems.push({ icon: Activity, label: 'Audit Logs', path: '/audit-logs' });
+    }
 
     return (
         <div className="flex h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
