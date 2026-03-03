@@ -56,8 +56,12 @@ class SyncState(SQLModel, table=True):
     last_external_id: int = Field(default=0)
     last_sync: datetime = Field(default_factory=datetime.utcnow)
 
+class EmployeePublic(EmployeeBase):
+    id: int
+    email: Optional[str] = None
+
 class EmployeesPublic(SQLModel):
-    data: List[Employee]
+    data: List[EmployeePublic]
     count: int
 
 class DepartmentsPublic(SQLModel):

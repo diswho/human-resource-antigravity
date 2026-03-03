@@ -10,6 +10,7 @@ interface Employee {
     lastname: string;
     lao_name?: string;
     bank_account?: string;
+    email?: string;
     gasoline_allowance: number;
     department_id?: number;
     position_id?: number;
@@ -177,6 +178,7 @@ const Employees = () => {
                             <tr className="bg-slate-50 dark:bg-slate-800/50 border-bottom border-slate-200 dark:border-slate-800">
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">ID</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Full Name (EN)</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Lao Name</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Bank Account</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Gasoline</th>
@@ -202,6 +204,7 @@ const Employees = () => {
                                     <tr key={emp.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                                         <td className="px-6 py-4 font-mono text-sm text-slate-600 dark:text-slate-400">{emp.emp_pin}</td>
                                         <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{emp.firstname} {emp.lastname}</td>
+                                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{emp.email || '-'}</td>
                                         <td className="px-6 py-4 text-slate-700 dark:text-slate-300">{emp.lao_name || '-'}</td>
                                         <td className="px-6 py-4 font-mono text-sm text-slate-600 dark:text-slate-400">{emp.bank_account || '-'}</td>
                                         <td className="px-6 py-4 text-slate-700 dark:text-slate-300">

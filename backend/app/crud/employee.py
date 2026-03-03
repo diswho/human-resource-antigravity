@@ -1,6 +1,6 @@
 from typing import List, Optional
 from sqlmodel import Session, select, func
-from app.models.hr import Employee, Department, Position
+from app.models.hr import Employee, Department, Position, EmployeePublic
 from app.models.user import User, UserRole
 
 def get_all_sub_department_ids(session: Session, dept_id: int) -> List[int]:
@@ -23,8 +23,8 @@ def get_employees(
     dept_id: Optional[int] = None,
     pos_id: Optional[int] = None,
     query: Optional[str] = None
-) -> List[Employee]:
-    statement = select(Employee)
+) -> List[EmployeePublic]:
+    statement = select(Employee, User.email).outerjoin(User, Employee.id == User.employee_id)
     
     # RBAC: Employees can only see themselves
     if current_user.role == UserRole.employee:
@@ -44,7 +44,13 @@ def get_employees(
             (Employee.emp_pin.ilike(f"%{query}%")) |
             (Employee.lao_name.ilike(f"%{query}%"))
         )
-    return session.exec(statement.offset(skip).limit(limit)).all()
+    
+    results = session.exec(statement.offset(skip).limit(limit)).all()
+    
+    return [
+        EmployeePublic(**emp.model_dump(), email=email)
+        for emp, email in results
+    ]
 
 def get_employees_count(
     session: Session,
